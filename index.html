@@ -766,16 +766,22 @@ async function renderSlips(){
   document.getElementById('ap-slips-c').innerHTML=html;
 }
 async function confirmSlip(slipId,appId){
-  if(!confirm('ยืนยันการชำระ?'))return;
   const loan=_loans.find(x=>x.id===appId)||_pending.find(x=>x.id===appId);
   if(!loan){toast('ไม่พบข้อมูลลูกค้า',1);return;}
+  const perM=Math.round((parseFloat(loan.total_payment)||0)/(parseInt(loan.months)||1)*100)/100;
+  const amt=prompt('จำนวนเงินที่ชำระตามสลิป (บาท)\nยอดต่องวดปกติ: '+perM+' บาท');
+  if(amt===null)return;
+  const amtN=parseFloat(amt);
+  if(!amtN||amtN<=0){toast('กรุณากรอกจำนวนเงินให้ถูกต้อง',1);return;}
+  if(!confirm('ยืนยันรับชำระ '+amtN+' บาท?'))return;
   const paidI=(parseInt(loan.paid_installments)||0)+1;
-  const perM=(parseFloat(loan.total_payment)||0)/(parseInt(loan.months)||1);
-  const paidA=(parseFloat(loan.paid_amount)||0)+perM;
-  const newS=paidI>=(parseInt(loan.months)||1)?'paid':'active';
+  const paidA=(parseFloat(loan.paid_amount)||0)+amtN;
+  const total=parseFloat(loan.total_payment)||0;
+  const newS=paidA>=total?'paid':'active';
   await apiPatch('/applications?id=eq.'+appId,{paid_installments:paidI,paid_amount:Math.round(paidA*100)/100,status:newS});
   await apiPatch('/payment_slips?id=eq.'+slipId,{status:'confirmed'});
-  toast('ยืนยันชำระงวดที่ '+paidI+' แล้ว');await loadAdmin();renderSlips();renderDash();
+  toast('ยืนยันชำระ '+amtN+' บาท งวดที่ '+paidI+' แล้ว');
+  await loadAdmin();renderSlips();renderDash();
 }
 async function rejectSlip(slipId){
   if(!confirm('ปฏิเสธสลิป?'))return;
