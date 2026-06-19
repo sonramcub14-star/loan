@@ -756,8 +756,7 @@ async function renderSlips(){
       </div>
       ${s.note?`<div style="font-size:12px;color:#8b8fa8;margin-bottom:8px">หมายเหตุ: ${s.note}</div>`:''}
       ${s.slip_image?`<img src="${s.slip_image}" onclick="showImg('${s.slip_image}')" style="width:100%;max-height:150px;object-fit:cover;border-radius:10px;border:1px solid #2a2d3a;cursor:zoom-in;display:block;margin-bottom:10px"/>`:''}
-      ${isPend?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button onclick="confirmSlip(${s.id},${s.application_id})" style="background:#14532d;border:1px solid #22c55e44;border-radius:10px;color:#22c55e;padding:9px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">✅ ยืนยันชำระ</button><button onclick="rejectSlip(${s.id})" style="background:#7f1d1d;border:1px solid #f8717144;border-radius:10px;color:#f87171;padding:9px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">❌ ปฏิเสธ</button></div>`:''}
-    </div>`;
+      ${isPend?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><button onclick="confirmSlip(${s.id},${s.application_id})" style="background:#14532d;border:1px solid #22c55e44;border-radius:10px;color:#22c55e;padding:9px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">✅ ยืนยันชำระ</button><button onclick="rejectSlip(${s.id})" style="background:#7f1d1d;border:1px solid #f8717144;border-radius:10px;color:#f87171;padding:9px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">❌ ปฏิเสธ</button></div>`:`<button onclick="deleteSlip(${s.id})" style="width:100%;background:#2a1515;border:1px solid #ff6b6b44;border-radius:10px;color:#ff6b6b;padding:9px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit">🗑 ลบสลิป</button>`}
   };
   let html='';
   if(pend.length)html+=`<div style="font-size:11px;color:#fde68a;font-weight:700;letter-spacing:1px;margin-bottom:10px">⏳ รอยืนยัน</div>`+pend.map(slipCard).join('');
@@ -788,6 +787,11 @@ async function rejectSlip(slipId){
   await apiPatch('/payment_slips?id=eq.'+slipId,{status:'rejected'});
   toast('ปฏิเสธแล้ว',1);renderSlips();
 }
+async function deleteSlip(slipId){
+  if(!confirm('ลบสลิปนี้?'))return;
+  await apiDelete('/payment_slips?id=eq.'+slipId);
+  toast('ลบแล้ว',1);await loadAdmin();renderSlips();
+}  
 function adminCalc(){
   const a=parseFloat(document.getElementById('ac-amt').value)||0;
   const m=parseInt(document.getElementById('ac-mo').value)||1;
