@@ -791,7 +791,7 @@ async function rejectSlip(slipId){
 async function deleteSlip(slipId){
   if(!confirm('ลบสลิปนี้?'))return;
   await apiDelete('/payment_slips?id=eq.'+slipId);
-  toast('ลบแล้ว',1);await loadAdmin();renderSlips();
+  toast('ลบแล้ว',1);_slips=_slips.filter(s=>s.id!==slipId);renderSlips();
 }  
 function adminCalc(){
   const a=parseFloat(document.getElementById('ac-amt').value)||0;
